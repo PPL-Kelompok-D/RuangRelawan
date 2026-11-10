@@ -1,11 +1,17 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\User\ActivityExplorationController;
+use App\Http\Controllers\User\ApplicationController as UserApplicationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// ==========================================
+// US-12: Detail Aktivitas & Tautan WhatsApp (Thalita)
+// ==========================================
+Route::get('/', [ActivityExplorationController::class, 'index'])->name('home');
+Route::get('/activities', [ActivityExplorationController::class, 'index'])->name('activities.index');
+Route::get('/activities/{id}', [ActivityExplorationController::class, 'show'])->whereNumber('id')->name('activities.show');
+Route::get('/activities/{id}/completion/document', [ActivityExplorationController::class, 'completionDocument'])->whereNumber('id')->name('activities.completion.document');
 
 // ==========================================
 // US-01: Pengelolaan Profil Relawan (Thalita)
@@ -20,8 +26,6 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 // ==========================================
 // US-09: Melihat Status Pendaftaran (Thalita)
 // ==========================================
-use App\Http\Controllers\User\ApplicationController as UserApplicationController;
-
 Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/my-activities', [UserApplicationController::class, 'myActivities'])->name('user.my-activities');
     Route::post('/activities/{id}/apply', [UserApplicationController::class, 'store'])->whereNumber('id')->name('activities.apply');
