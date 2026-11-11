@@ -31,7 +31,8 @@ class CommunityApplicantController extends Controller
                 });
             })
             ->latest()
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
         $user = $request->user();
 
         return view('community.applicants.index', compact('user', 'community', 'activity', 'applications', 'filters'));
