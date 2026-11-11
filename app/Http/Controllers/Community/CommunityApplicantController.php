@@ -23,7 +23,8 @@ class CommunityApplicantController extends Controller
                 $query->whereHas('applicant', function ($applicantQuery) use ($keyword) {
                     $applicantQuery->where(function ($nameQuery) use ($keyword) {
                         $nameQuery->where('name', 'like', "%{$keyword}%")
-                            ->orWhere('email', 'like', "%{$keyword}%");
+                            ->orWhere('email', 'like', "%{$keyword}%")
+                            ->orWhereHas('profilUser', fn ($profile) => $profile->where('no_hp', 'like', "%{$keyword}%"));
                     });
                 });
             })
