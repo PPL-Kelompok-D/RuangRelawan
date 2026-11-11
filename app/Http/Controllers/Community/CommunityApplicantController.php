@@ -15,10 +15,12 @@ class CommunityApplicantController extends Controller
         $activity = $community->activities()->findOrFail($id);
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'in:menunggu,diterima,ditolak'],
         ]);
 
         $applications = $activity->applications()
             ->with(['applicant.profilUser', 'activity'])
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['q'] ?? null, function ($query, $keyword) {
                 $query->whereHas('applicant', function ($applicantQuery) use ($keyword) {
                     $applicantQuery->where(function ($nameQuery) use ($keyword) {
@@ -31,7 +33,6 @@ class CommunityApplicantController extends Controller
             ->latest()
             ->get();
         $user = $request->user();
-        $filters['status'] = '';
 
         return view('community.applicants.index', compact('user', 'community', 'activity', 'applications', 'filters'));
     }
