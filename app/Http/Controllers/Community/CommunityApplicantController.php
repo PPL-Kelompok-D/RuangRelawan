@@ -13,12 +13,24 @@ class CommunityApplicantController extends Controller
     {
         $community = $this->communityFor($request);
         $activity = $community->activities()->findOrFail($id);
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $applications = $activity->applications()
             ->with(['applicant.profilUser', 'activity'])
+            ->when($filters['q'] ?? null, function ($query, $keyword) {
+                $query->whereHas('applicant', function ($applicantQuery) use ($keyword) {
+                    $applicantQuery->where(function ($nameQuery) use ($keyword) {
+                        $nameQuery->where('name', 'like', "%{$keyword}%")
+                            ->orWhere('email', 'like', "%{$keyword}%");
+                    });
+                });
+            })
             ->latest()
             ->get();
         $user = $request->user();
-        $filters = ['q' => '', 'status' => ''];
+        $filters['status'] = '';
 
         return view('community.applicants.index', compact('user', 'community', 'activity', 'applications', 'filters'));
     }
