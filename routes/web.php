@@ -7,3 +7,7 @@ Route::get('/', function () {
 });
 Route::get('/activities', [ActivityExplorationController::class, 'index'])
     ->name('activities.index');
+
+    Route::get('/activities/{id}', [ActivityExplorationController::class, 'show'])
+    ->whereNumber('id')
+    ->name('activities.show');

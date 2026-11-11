@@ -75,4 +75,18 @@ class ActivityExplorationController extends Controller
 
         return view('activities.index', compact('activities', 'categories', 'communities', 'filters', 'statistics', 'myOngoingActivities', 'user'));
     }
+
+        public function show(int $id): View
+    {
+        $activity = Activity::query()
+            ->with(['category', 'community'])
+            ->withCount([
+                'applications as accepted_applications_count' => fn ($query) =>
+                    $query->where('status', 'diterima'),
+            ])
+            ->whereIn('status_aktivitas', ['dipublikasikan', 'selesai'])
+            ->findOrFail($id);
+
+        return view('activities.show', compact('activity'));
+    }
 }
