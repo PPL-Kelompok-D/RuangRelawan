@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\Community;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -60,20 +61,32 @@ class CommunityApplicantController extends Controller
     private function decide(Request $request, int $id, string $decision): Application
     {
         $community = $this->communityFor($request);
-        $application = Application::query()
-            ->whereHas('activity', fn ($query) => $query->where('community_id', $community->id))
-            ->findOrFail($id);
 
-        if ($application->status !== 'menunggu') {
-            throw ValidationException::withMessages(['application' => 'Keputusan hanya dapat dibuat untuk pendaftaran yang masih menunggu.']);
-        }
+        return DB::transaction(function () use ($community, $id, $decision) {
+            $application = Application::query()
+                ->whereHas('activity', fn ($query) => $query->where('community_id', $community->id))
+                ->lockForUpdate()
+                ->findOrFail($id);
 
-        $application->update([
-            'status' => $decision,
-            'tanggal_keputusan' => now(),
-        ]);
+            if ($application->status !== 'menunggu') {
+                throw ValidationException::withMessages(['application' => 'Keputusan hanya dapat dibuat untuk pendaftaran yang masih menunggu.']);
+            }
 
-        return $application;
+            if ($decision === 'diterima') {
+                $activity = $community->activities()->lockForUpdate()->findOrFail($application->activity_id);
+                $accepted = $activity->applications()->where('status', 'diterima')->count();
+                if ($activity->kuota_relawan !== null && $accepted >= $activity->kuota_relawan) {
+                    throw ValidationException::withMessages(['application' => 'Kuota aktivitas sudah penuh.']);
+                }
+            }
+
+            $application->update([
+                'status' => $decision,
+                'tanggal_keputusan' => now(),
+            ]);
+
+            return $application;
+        });
     }
 
     private function communityFor(Request $request): Community
