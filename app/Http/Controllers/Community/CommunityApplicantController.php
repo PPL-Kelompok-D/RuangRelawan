@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Community;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\Community;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CommunityApplicantController extends Controller
@@ -36,6 +39,41 @@ class CommunityApplicantController extends Controller
         $user = $request->user();
 
         return view('community.applicants.index', compact('user', 'community', 'activity', 'applications', 'filters'));
+    }
+
+    public function accept(Request $request, int $id): RedirectResponse
+    {
+        $application = $this->decide($request, $id, 'diterima');
+
+        return redirect()->route('community.activities.applicants.index', $application->activity_id)
+            ->with('success', 'Pendaftar berhasil diterima.');
+    }
+
+    public function reject(Request $request, int $id): RedirectResponse
+    {
+        $application = $this->decide($request, $id, 'ditolak');
+
+        return redirect()->route('community.activities.applicants.index', $application->activity_id)
+            ->with('success', 'Pendaftar berhasil ditolak.');
+    }
+
+    private function decide(Request $request, int $id, string $decision): Application
+    {
+        $community = $this->communityFor($request);
+        $application = Application::query()
+            ->whereHas('activity', fn ($query) => $query->where('community_id', $community->id))
+            ->findOrFail($id);
+
+        if ($application->status !== 'menunggu') {
+            throw ValidationException::withMessages(['application' => 'Keputusan hanya dapat dibuat untuk pendaftaran yang masih menunggu.']);
+        }
+
+        $application->update([
+            'status' => $decision,
+            'tanggal_keputusan' => now(),
+        ]);
+
+        return $application;
     }
 
     private function communityFor(Request $request): Community
