@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,12 +18,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    public function profilUser()
+    public function profilUser(): HasOne
     {
         return $this->hasOne(ProfilUser::class);
     }
 
-    public function community()
+    public function community(): HasOne
     {
         return $this->hasOne(Community::class);
     }
@@ -30,11 +31,6 @@ class User extends Authenticatable
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class, 'applicant_id');
-    }
-
-    public function donations(): HasMany
-    {
-        return $this->hasMany(Donation::class);
     }
 
     /** Read the legacy Indonesian attribute from the canonical database column. */
@@ -69,20 +65,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function community(): HasOne
-    {
-        return $this->hasOne(Community::class);
-    }
-
-    public function profilUser(): HasOne
-    {
-        return $this->hasOne(ProfilUser::class);
-    }
-
-    public function applications(): HasMany
-    {
-        return $this->hasMany(Application::class, 'applicant_id');
     }
 }
