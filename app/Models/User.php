@@ -70,4 +70,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function community(): HasOne
+    {
+        return $this->hasOne(Community::class);
+    }
+
+    public function profilUser(): HasOne
+    {
+        return $this->hasOne(ProfilUser::class);
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'applicant_id');
+    }
 }
