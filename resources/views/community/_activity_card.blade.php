@@ -1,0 +1,6 @@
+<article class="overflow-hidden rounded-2xl border border-[#E2E8D8] bg-white shadow-sm">
+    <a href="{{ route('activities.show', $activity) }}" class="block">
+        <div class="h-44 overflow-hidden bg-[#F4F6F0]">@if($activity->gambar_aktivitas)<img src="{{ asset('storage/'.$activity->gambar_aktivitas) }}" alt="{{ $activity->judul }}" class="h-full w-full object-cover">@else<img src="{{ asset('images/default-activity.svg') }}" alt="{{ $activity->judul }}" class="h-full w-full object-cover">@endif</div>
+        <div class="p-5"><div class="flex flex-wrap gap-2"><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-[#2D6A4F]">{{ $activity->category?->nama_kategori ?? 'Aktivitas' }}</span>@if($activity->status_aktivitas === 'selesai')<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Selesai</span>@endif</div><h3 class="mt-3 text-lg font-bold text-slate-900">{{ $activity->judul }}</h3><p class="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{{ $activity->deskripsi }}</p><p class="mt-4 text-xs text-slate-500">{{ $activity->lokasi }} · {{ $activity->tanggal_mulai?->format('d M Y') }}</p><span class="mt-4 inline-block text-sm font-semibold text-[#2D6A4F]">Lihat detail →</span></div>
+    </a>
+</article>
